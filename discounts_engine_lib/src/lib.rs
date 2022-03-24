@@ -2,6 +2,7 @@
 extern crate serde;
 extern crate serde_derive;
 use serde::Serialize;
+use serde::Deserialize;
 use wasm_bindgen::prelude::*;
 
 #[cfg(feature = "wee_alloc")]
@@ -40,13 +41,20 @@ struct DiscountResult {
     lines: [DiscountLine; 1],
 }
 
+#[derive(Deserialize)]
+struct Ticket {
+    lineId: String
+}
+
 #[wasm_bindgen]
 extern "C" {
     pub fn alert(s: &str);
 }
 
 #[wasm_bindgen]
-pub fn applyDiscount() -> JsValue{
+pub fn applyDiscount(ticket: &JsValue) -> JsValue{
+    let ticketTransformed : Ticket = JsValue::into_serde(ticket).unwrap();
+
     // receives some things
     let discounts: [Discount; 1] = [Discount {
         ruleId: String::from("C26B841C84B14FE2AB1A334DD3672E87"),
@@ -66,7 +74,7 @@ pub fn applyDiscount() -> JsValue{
     }];
 
     let discountLines: [DiscountLine; 1] = [DiscountLine {
-        id: String::from("513DD5FF56185A305A8ED432C2F3AB0E"),
+        id: ticketTransformed.lineId,
         grossUnitAmount: 5.1,
         grossUnitPrice: 0.1,
         discounts: discounts,
